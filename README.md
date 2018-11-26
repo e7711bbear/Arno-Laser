@@ -4,6 +4,9 @@ Arno Laser is a DIY Laser Cutter kit designed to be ready to use and includes so
 *Status as of Sept 2018*
 ![Arno Laser Main Picture](./images/arnolaser.png)
 
+*CAD Picture*
+![Arno Laser CAD](./images/arnolaser-cad.png)
+
 ## Features
 This laser cutter is to include inside its case:
 
