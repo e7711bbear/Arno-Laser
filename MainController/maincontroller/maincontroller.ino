@@ -16,10 +16,6 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-//
-// Set up section
-//
-
 void setup() {
   Serial.begin(115200);
 
@@ -28,15 +24,13 @@ void setup() {
   setupThermometer();
 }
 
-//
-// Loop
-//
-
 void loop() {
   // put your main code here, to run repeatedly:
-  readThermometer();
-  delay(100); // loop at 10Hz
+  float temperature = readThermometer();
+  Serial.print("Temperature: "); 
+  Serial.println(temperature);
   
+  delay(100); // loop at 10Hz
 }
 
 
@@ -92,18 +86,9 @@ void setupThermometer() {
   pinMode(THERMO, INPUT);
 }
 
-void readThermometer() {
-  // call sensors.requestTemperatures() to issue a global temperature 
- // request to all devices on the bus 
-/********************************************************************/
- Serial.print(" Requesting temperatures..."); 
- thermometer.requestTemperatures(); // Send the command to get temperature readings 
- Serial.println("DONE"); 
-/********************************************************************/
- Serial.print("Temperature is: "); 
- Serial.print(thermometer.getTempCByIndex(0)); // Why "byIndex"?  
-   // You can have more than one DS18B20 on the same bus.  
-   // 0 refers to the first IC on the wire 
+float readThermometer() {
+ thermometer.requestTemperatures();
+ return thermometer.getTempCByIndex(0);
 }
 
 
