@@ -2,7 +2,7 @@
 #define FAN_PWM     5
 
 #define WATER_CTRL  8
-#define WATRR_PWM   10
+#define WATER_PWM   10
 
 #define AIR_CTRL    22
 
@@ -55,16 +55,27 @@ void setup() {
 
   setupFans();
   setupWaterPump();
+  setupAirPump();
   setupThermometer();
 }
 
 void loop() {
+  static int index = 0;
   // put your main code here, to run repeatedly:
   float temperature = readThermometer();
   Serial.print("Temperature: ");
   Serial.println(temperature);
 
   delay(100); // loop at 10Hz
+
+  index++;
+
+  if (index <= 20) {
+    turnOnAirPump();
+  } else {
+    turnOffAirPump();
+  }
+  index = index >= 40 ? 0 : index;
 }
 
 
@@ -98,15 +109,34 @@ void setFanSpeed(int speed) { // 0-100%
 //
 
 void setupWaterPump() {
+  pinMode(WATER_CTRL, OUTPUT);
+  pinMode(WATER_PWM, OUTPUT);
 
+  turnOnWaterPump();
 }
 
 void turnOnWaterPump() {
-
+  digitalWrite(WATER_CTRL, HIGH);
 }
 
 void turnOffWaterPump() {
+  digitalWrite(WATER_CTRL, LOW);
+}
 
+//
+// Air Pump Controls
+// 
+
+void setupAirPump() {
+  pinMode(AIR_CTRL, OUTPUT);
+}
+
+void turnOnAirPump() {
+  digitalWrite(AIR_CTRL, HIGH);
+}
+
+void turnOffAirPump() {
+  digitalWrite(AIR_CTRL, LOW);
 }
 
 //
