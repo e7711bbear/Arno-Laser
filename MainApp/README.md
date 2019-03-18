@@ -16,3 +16,11 @@ hdmi_drive=1
 
 Drivers
 https://www.waveshare.com/wiki/7inch_HDMI_LCD_(B)
+
+
+
+###Disable screensaver persisten after reboot
+
+sudo nano /etc/lightdm/lightdm.conf
+
+add: xserver-command=X -s 0 -dpms
