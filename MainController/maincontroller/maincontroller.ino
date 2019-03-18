@@ -64,8 +64,8 @@ void loop() {
   static int index = 0;
   float temperature = readWaterThermometer();
   
-  Serial.print("Temperature: ");
-  Serial.println(temperature);
+//  Serial.print("Temperature: ");
+//  Serial.println(temperature);
 
   delay(100); // loop at 10Hz
 }
@@ -84,10 +84,12 @@ void setupFans() {
 }
 
 void turnOnFans() {
+  Serial.println("Turning Fans On");
   digitalWrite(FAN_CTRL, HIGH);
 }
 
 void turnOffFans() {
+  Serial.println("Turning Fans Off");
   digitalWrite(FAN_CTRL, LOW);
 }
 
@@ -107,10 +109,12 @@ void setupWaterSystem() {
 }
 
 void turnOnWaterPump() {
+  Serial.println("Turning Water Pump On");
   digitalWrite(WATER_CTRL, HIGH);
 }
 
 void turnOffWaterPump() {
+  Serial.println("Turning Water Pump Off");
   digitalWrite(WATER_CTRL, LOW);
 }
 
@@ -132,10 +136,12 @@ void setupAirPump() {
 }
 
 void turnOnAirPump() {
+  Serial.println("Turning Air Pump On");
   digitalWrite(AIR_CTRL, HIGH);
 }
 
 void turnOffAirPump() {
+  Serial.println("Turning Air Pump Off");
   digitalWrite(AIR_CTRL, LOW);
 }
 
@@ -158,16 +164,23 @@ void turnOffAirPump() {
 void setupI2C() {
   Wire.begin(I2C_SLAVE);
   Wire.onReceive(receivedI2C);
-  Wire.onRequest(requestedPush);
+//  Wire.onRequest(requestedPush);
 }
 
 void receivedI2C() {
+  int buffer[10];
+  int index = 0;
+  
   while(Wire.available()) {
     int data = Wire.read();
 
     Serial.print("I2C received: ");
     Serial.println(data);
+    buffer[index++] = data;
   }
+
+  Serial.println("Passing to I2C handler");
+  handleI2CCommand(buffer[0], buffer[1]);
 }
 
 void sendToI2C() {
@@ -176,6 +189,37 @@ void sendToI2C() {
   size_t len = 1;
   Wire.write(value, len);
   Wire.endTransmission();
+}
+
+void handleI2CCommand(int cmd, int param) {
+  switch(cmd) {
+    case 0x10:
+      turnOnAirPump();
+      return;
+    
+    case 0x11:
+      turnOffAirPump();
+      return;
+    
+    case 0x20:
+      turnOnFans();
+      return;
+
+    case 0x21:
+      turnOffFans();
+      return;
+
+    case 0x30:
+      turnOnWaterPump();
+      return;
+
+    case 0x31:
+      turnOffWaterPump();
+      return;
+    
+    default:
+      return;
+  }
 }
 
 // Push Data pack
