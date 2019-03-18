@@ -1,18 +1,18 @@
-#define FAN_CTRL    4
-#define FAN_PWM     5
+#define FAN_CTRL      4
+#define FAN_PWM       5
 
-#define WATER_CTRL  8
-#define WATER_PWM   10
+#define WATER_CTRL    8
+#define WATER_PWM     10
+#define WATER_THERMO  37
+#define WATER_FLOW    36
 
-#define AIR_CTRL    22
+#define AIR_CTRL      22
 
-#define I2C_SDA     20
-#define I2C_SCL     21
-#define I2C_SLAVE   8
+#define I2C_SDA       20
+#define I2C_SCL       21
+#define I2C_SLAVE     0x8
 
-#define FLOW        36
 
-#define THERMO      37
 
 typedef enum {
   none = 0,
@@ -54,28 +54,20 @@ void setup() {
   setupDebugging();
 
   setupFans();
-  setupWaterPump();
+  setupWaterSystem();
   setupAirPump();
-  setupThermometer();
+
+  setupI2C();
 }
 
 void loop() {
   static int index = 0;
-  // put your main code here, to run repeatedly:
-  float temperature = readThermometer();
+  float temperature = readWaterThermometer();
+  
   Serial.print("Temperature: ");
   Serial.println(temperature);
 
   delay(100); // loop at 10Hz
-
-  index++;
-
-  if (index <= 20) {
-    turnOnAirPump();
-  } else {
-    turnOffAirPump();
-  }
-  index = index >= 40 ? 0 : index;
 }
 
 
@@ -108,11 +100,10 @@ void setFanSpeed(int speed) { // 0-100%
 // Water Pump Controls
 //
 
-void setupWaterPump() {
+void setupWaterSystem() {
   pinMode(WATER_CTRL, OUTPUT);
   pinMode(WATER_PWM, OUTPUT);
-
-  turnOnWaterPump();
+  pinMode(WATER_THERMO, INPUT);
 }
 
 void turnOnWaterPump() {
@@ -122,6 +113,15 @@ void turnOnWaterPump() {
 void turnOffWaterPump() {
   digitalWrite(WATER_CTRL, LOW);
 }
+
+OneWire waterThermoWire(WATER_THERMO);
+DallasTemperature waterThermometer(&waterThermoWire);
+
+float readWaterThermometer() {
+  waterThermometer.requestTemperatures();
+  return waterThermometer.getTempCByIndex(0);
+}
+
 
 //
 // Air Pump Controls
@@ -140,29 +140,25 @@ void turnOffAirPump() {
 }
 
 //
-// Thermometer controls
-//
-
-OneWire thermoWire(THERMO);
-DallasTemperature thermometer(&thermoWire);
-
-void setupThermometer() {
-  pinMode(THERMO, INPUT);
-}
-
-float readThermometer() {
-  thermometer.requestTemperatures();
-  return thermometer.getTempCByIndex(0);
-}
-
-
-//
 // I2C
+//
+
+// Cmds list
+// 
+// AirTurnOn:     0x10
+// AirTurnOff:    0x11
+//
+// FansTurnOn:    0x20
+// FansTurnOff:   0x21
+//
+// WaterTurnOn:   0x30
+// WaterTurnOff:  0x31
 //
 
 void setupI2C() {
   Wire.begin(I2C_SLAVE);
   Wire.onReceive(receivedI2C);
+  Wire.onRequest(requestedPush);
 }
 
 void receivedI2C() {
@@ -174,6 +170,31 @@ void receivedI2C() {
   }
 }
 
+void sendToI2C() {
+  Wire.beginTransmission(0x00);
+  uint8_t *value = 0;
+  size_t len = 1;
+  Wire.write(value, len);
+  Wire.endTransmission();
+}
+
+// Push Data pack
+
+typedef struct {
+  bool fanState = 0; // 0 off, 1 on
+  bool airState = 0;
+  bool waterState = 0;
+  int temp; // celsius, x100 from float
+} pushPack;
+
+void requestedPush() {
+  pushPack pack;
+
+  float tempTemp = readWaterThermometer();
+  pack.temp = tempTemp * 100;
+  
+  Wire.write((uint8_t*)&pack, sizeof(pack));
+}
 
 //
 // Debugging
