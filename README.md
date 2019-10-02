@@ -36,3 +36,7 @@ This laser cutter is to include inside its case:
 The goal of this design is to create a Laser Cutter kit that can be assembled at home/office/school with a limited amount of tools.
 
 To achieve this goal, I will leverage at maximum stock parts and 3D printed parts.
+
+
+# Cooling
+Needs about 1.3L of distilled water.

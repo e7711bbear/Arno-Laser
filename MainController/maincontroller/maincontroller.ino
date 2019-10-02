@@ -55,9 +55,9 @@ void setup() {
 
   setupFans();
   setupWaterSystem();
-  setupAirPump();
+//  setupAirPump();
 
-  setupI2C();
+//  setupI2C();
 }
 
 void loop() {
@@ -67,7 +67,7 @@ void loop() {
 //  Serial.print("Temperature: ");
 //  Serial.println(temperature);
 
-  delay(100); // loop at 10Hz
+  delay(100); // loop at 10Hz  
 }
 
 
@@ -106,11 +106,13 @@ void setupWaterSystem() {
   pinMode(WATER_CTRL, OUTPUT);
   pinMode(WATER_PWM, OUTPUT);
   pinMode(WATER_THERMO, INPUT);
+  turnOnWaterPump();
 }
 
 void turnOnWaterPump() {
   Serial.println("Turning Water Pump On");
   digitalWrite(WATER_CTRL, HIGH);
+  digitalWrite(WATER_PWM, HIGH);
 }
 
 void turnOffWaterPump() {

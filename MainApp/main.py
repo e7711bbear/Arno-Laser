@@ -4,7 +4,7 @@
 #
 
 from tkinter import *
-from smbus import SMBus
+from i2c import *
 
 class MainController:
     def __init__(self, mainWindow):
@@ -31,7 +31,8 @@ class MainController:
         self.areFansOn = False
    
         self.initUI()
-        self.initI2C()
+
+        self.i2cController = I2CController()
 
     def initUI(self):
         # Headline
@@ -124,39 +125,7 @@ class MainController:
             self.sendToMCU(0x10, 0)
             self.isAirPumpOn = True
 
-#
-# I2C
-#
-    def initI2C(self):
-        try:
-            self.i2cBus = SMBus(1) # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
-        except:
-            print("Error opening I2C bus")
-            return
-        self.MCUI2CAddress = 0x8
-        self.CNCI2CAddress = 0x10
 
-    def checkI2CStatus(self):
-        bus.read_byte_data(80,0)
-        #Write a single register
-        #cmd = 0x32
-        #value = 0x80
-        #bus.write_byte_data(self.MCUI2CAddress, cmd, value)
-
-        #Write an array of registers
-        #values = [0xff, 0xff, 0xff, 0xff, 0xff, 0xff]
-        #bus.write_i2c_block_data(self.MCUI2CAddress, cmd, values)
-
-    def sendToMCU(self, cmdId, value):
-        self.i2cBus.write_byte_data(self.MCUI2CAddress, cmdId, value)
-        return
-
-    def sendToCNC(self, cmdId, value):
-        self.i2cBus.write_byte_data(self.CNCI2CAddress, cmdId, value)        
-        return
-        
-    def closeI2C(self):
-        self.i2cBus.close()
 
 mainApp = Tk()
 mainGui = MainController(mainApp)
